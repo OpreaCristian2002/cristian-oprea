@@ -1,0 +1,10 @@
+
+server/node_modules
+
+.idea/workspace.xml
+
+client/package-lock.json
+
+server/.env
+
+server/package-lock.json
