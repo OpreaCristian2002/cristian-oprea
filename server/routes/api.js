@@ -40,7 +40,7 @@ router.route("/images")
             //In case keywords exists, we query based on the keywords
             params = {
                 ...params,
-                "text": keywords,
+                "tags": keywords,
                 "method": "flickr.photos.search"
             }
             axios.get(URL ,{"params": params})

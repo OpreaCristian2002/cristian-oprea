@@ -1,3 +1,7 @@
 body {
   margin: 0;
+  background-color: #140005;
+  font-family: Inter, sans-serif;
+  min-width: 300px;
+  padding: 30px;
 }
