@@ -4,7 +4,7 @@
   "description": "Server for the Miyagami Case",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "Ioan-Cristian Oprea",
   "license": "ISC",
