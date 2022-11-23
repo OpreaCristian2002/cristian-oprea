@@ -37,7 +37,7 @@ describe("GET /api/images", () => {
                     "page": page,
                     "per_page": "20",
                     "safe_search": "1",
-                    "text": keywords}
+                    "tags": keywords}
         })
     })
 
