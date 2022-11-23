@@ -126,3 +126,52 @@ test("submit event that does return an empty string should print no results foun
 })
 
 
+test("post appears when clicking an image and disappears on outside click of the post", async () => {
+    // Arrange
+    const container = render(<App />)
+    // Mocked result needs to have the same structure as the application expects
+    const mockedResults = {
+        photos: {
+            photo: [
+                {
+                    "id": "52516711928",
+                    "owner": "130281204@N06",
+                    "secret": "dfde9a9633",
+                    "server": "65535",
+                    "farm": 66,
+                    "title": "Kahn & a tall Red Beardie Orchid",
+                    "ispublic": 1,
+                    "isfriend": 0,
+                    "isfamily": 0
+                }
+            ]}}
+    // Mock the fetch to return our own values
+    jest.spyOn(global, 'fetch')
+        .mockResolvedValue(Promise.resolve(
+            {
+                ok: true,
+                status: 200,
+                json: async () => mockedResults,
+            }
+        ))
+
+    // Act - fire the submit event and wait for the changes to be displayed
+    // For this waitForElementToBeRemoved is used which waits for the "Make your search" element to disappear
+    const form = screen.queryByPlaceholderText("Search for your favourite posts")
+    fireEvent.change(form, {target: {value: 'dog'}})
+    fireEvent.submit(form)
+    await waitForElementToBeRemoved(() => screen.getByText("Make your search"))
+    const image = screen.getAllByRole("img")[0]
+    // Fire click event on the image
+    fireEvent.click(image)
+    const postWrapper = screen.getByTestId("post-element")
+
+    //Assert - Expect the appearance of the post in the document
+    expect(postWrapper).toBeInTheDocument()
+
+    //Act - Fire click event on the outside of the post
+    fireEvent.click(postWrapper)
+
+    // Assert - Expect the disappearance of the post in the document
+    expect(postWrapper).not.toBeInTheDocument()
+})
