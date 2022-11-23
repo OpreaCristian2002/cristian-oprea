@@ -12,8 +12,23 @@ export default function Post(props) {
     React.useEffect(() => {
         // Retrieve more detailed information about the image
         async function retrieveImageInfo() {
-            const res = await fetch(`${URL}/api/images/${image.id}`)
-            const data = await res.json()
+            // Error handling - In case the server returns an error status or there
+            // is an error with the fetch, a console error is displayed
+            const data = await fetch(`${URL}/api/images/${image.id}`)
+                .then(res => {
+                    if(res.ok) {
+                        return res.json()
+                    } else {
+                        return Promise.reject(res)
+                    }
+                })
+                .catch((err) => {
+                    console.error("Something went wrong while retrieving image information")
+                    return
+                })
+
+            if(!data) return
+
             setImageInfo(data.photo)
         }
 
