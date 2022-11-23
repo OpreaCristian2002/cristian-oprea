@@ -9,38 +9,53 @@ export default function App() {
 
     // State Variables
     const [page, setPage] = React.useState(1)
+    const numberPages = React.useRef(0)
     const [images, setImages] = React.useState([])
     const [keywords, setKeywords] = React.useState("")
     const [displayImage, setDisplayImage] = React.useState(null)
-    const textException = React.useRef("Make your search")
+    const [textException, setTextException] = React.useState("Make your search")
 
     /**
      * Function that retrieves the images from the server and handles the result.
      * If the server does not find any data with the respective keywords, it sets the textException ...
-     * ... to no results found.
+     * ... to no results found and if there is an error with the fetch it sets it to something went wrong.
      */
     async function retrieveImages() {
 
-        const res = await fetch(`${URL}/api/images?page=${page}&keywords=${keywords}`)
-        const data = await res.json()
-        setImages(prevImages => {
-            const newImages = [...prevImages, ...data.photos.photo]
-            // Before returning the newState I change the textException ref
-            // This because here is the only place inside this async function where
-            // I can access the most recent version of images state
-            newImages.length === 0 ?
-                textException.current = `No results found for "${keywords}"` :
-                textException.current = ""
-            return newImages
-        })
+        // Error handling - In case the server returns an error status or there
+        // is an error with the fetch, "Something went wrong" is displayed on the screen
+        const data = await fetch(`${URL}/api/images?page=${page}&keywords=${keywords}`)
+            .then(res => {
+                if(res.ok) {
+                    return res.json()
+                } else {
+                    return Promise.reject(res)
+                }
+            })
+            .catch((err) => {
+                setTextException("Something went wrong")
+            })
+
+        if(!data) return
+
+        // Check if there are no results and update the exception text
+        data.photos.pages === 0 ?
+            setTextException(`No results found for "${keywords}"`) :
+            setTextException("")
+
+        if(page === 1) numberPages.current = data.photos.pages
+
+        setImages(data.photos.photo)
     }
 
-    // Used to fetch data from the next page of flickr when scrolling down
+    // Used to fetch data from the next page of flickr when clicking the button
+    // Initially wanted to have an infinte scroll instead of buttons. Leaving the solution
+    // as is in case it is implemented in the future.
     React.useEffect(() => {
 
-        //When the element is not mounted(on mount page is 1) or when we send a new submission with page 1
+        //When the element is not mounted(on mount the textException is "Make your search") or when we send a new submission with page 1
         //retrieveImages should not be called because it would duplicate the results on the page
-        if(page !== 1) {
+        if(textException !== "Make your search") {
             retrieveImages()
         }
     }, [page])
@@ -51,6 +66,7 @@ export default function App() {
         // Set the states to their initial values on a new submission
         setPage(1)
         setImages([])
+        numberPages.current = 0
         // Query the server
         retrieveImages()
     }
@@ -93,11 +109,31 @@ export default function App() {
             </form>
             <hr />
             <div className="grid">
-                {images.length !== 0 ? imageElements : <div className="initial-text">{textException.current}</div>}
+                {images.length !== 0 ? imageElements : <div className="initial-text">{textException}</div>}
             </div>
+
+            {/*Buttons for scrolling through the pages of a query*/}
+            {images.length !== 0 &&
+                <div className = "page--button--wrapper">
+                    <button
+                        className = "page--button"
+                        onClick = {() => setPage(prev => prev - 1)}
+                        disabled={page === 1}
+                    >
+                        Previous
+                    </button>
+                    <button
+                        className = "page--button"
+                        onClick= {() => setPage(prev => prev + 1)}
+                        disabled={page === numberPages.current}
+                    >
+                        Next
+                    </button>
+                </div>
+            }
         </div>
 
-        {/*It is a sibling of the rest of the app so that it does not get blurred as well*/}
+        {/*The post is a sibling of the rest of the app so that it does not get blurred as well*/}
         {displayImage &&
             <Post
                 image={displayImage}
