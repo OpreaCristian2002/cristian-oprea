@@ -1,4 +1,4 @@
-import { render, fireEvent, screen, waitFor} from '@testing-library/react';
+import { render, screen, waitFor} from '@testing-library/react';
 import Post from '../components/Post/Post'
 
 const URL = 'http://localhost:2000/api/images'
