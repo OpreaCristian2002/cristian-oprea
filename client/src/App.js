@@ -1,5 +1,6 @@
 import './App.css';
 import React from "react"
+import Post from "./components/Post/Post"
 import {FiSearch} from "react-icons/fi"
 
 export default function App() {
@@ -10,6 +11,7 @@ export default function App() {
     const [page, setPage] = React.useState(1)
     const [images, setImages] = React.useState([])
     const [keywords, setKeywords] = React.useState("")
+    const [displayImage, setDisplayImage] = React.useState(null)
     const textException = React.useRef("Make your search")
 
     /**
@@ -53,36 +55,55 @@ export default function App() {
         retrieveImages()
     }
 
+    /**
+     * This function sets the image to be displayed in the middle of the screen
+     * @param index - index of the image inside the the images array
+     */
+    function handleDisplay(index) {
+        setDisplayImage(images[index])
+    }
+
     //Image elements that will be displayed in the grid
     const imageElements = images.map((image, index) => {
         return (
                 <img
-                    className="grid--image"
+                    draggable="false"
+                    className={displayImage ? "grid--image" : "grid--image hover"}
                     key={image.id}
                     src={`https://live.staticflickr.com/${image.server}/${image.id}_${image.secret}_w.jpg`}
                     alt={''}
+                    onClick={() => handleDisplay(index)}
                 />
         )
     })
 
   return (
-    <div>
-
-        <h1 className="title">Search</h1>
-        <form onSubmit={handleSubmit}>
-            <button className="form--button"><FiSearch /></button>
-            <input
-                className="form--input"
-                type="text"
-                placeholder="Search for your favourite posts"
-                onChange={(event) => setKeywords(event.target.value)}
-            />
-        </form>
-        <hr />
-        <div className="grid">
-            {images.length !== 0 ? imageElements : <div className="initial-text">{textException.current}</div>}
+    <>
+        {/*Added a wrapper so that when the image opens the background gets blurred*/}
+        <div className={displayImage ? "blur" : ""}>
+            <h1 className="title">Search</h1>
+            <form onSubmit={handleSubmit}>
+                <button className="form--button"><FiSearch /></button>
+                <input
+                    className="form--input"
+                    type="text"
+                    placeholder="Search for your favourite posts"
+                    onChange={(event) => setKeywords(event.target.value)}
+                />
+            </form>
+            <hr />
+            <div className="grid">
+                {images.length !== 0 ? imageElements : <div className="initial-text">{textException.current}</div>}
+            </div>
         </div>
 
-    </div>
+        {/*It is a sibling of the rest of the app so that it does not get blurred as well*/}
+        {displayImage &&
+            <Post
+                image={displayImage}
+                setImage={setDisplayImage}
+        />
+        }
+    </>
   );
 }
